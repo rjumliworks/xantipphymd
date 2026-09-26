@@ -12,13 +12,15 @@ return [
 
     'person' => [
         'title'      => 'Dr.',
-        'first_name' => 'Xantipphy',          // confirm spelling
-        'last_name'  => '[Surname]',
+        'first_name' => 'Xantipphy',
+        'middle'     => 'Mae N.',
+        'last_name'  => 'Ibrahim-Jumli',
         'suffix'     => 'MD',                 // taken from the folder name — confirm
         'role'       => 'Internal Medicine Physician',
         'specialty'  => 'Internal Medicine',
-        'city'       => '[City]',
-        'region'     => '[Region]',
+        'city'       => 'Zamboanga City',
+        'region'     => 'Philippines',
+        'hospital'   => 'Zamboanga City Medical Center',
     ],
 
     // Which sections the site shows. For the anniversary gift it's just the intro,
@@ -28,6 +30,10 @@ return [
         'consultation' => false,
         'education'    => false,
         'contact'      => false,
+        'letter'       => false,   // "Behind the physician" personal note
+        'about'        => false,
+        'footer'       => false,
+        // All off = a single-screen page (just the hero). Turn any back on for the full site.
     ],
 
     'site' => [
@@ -39,6 +45,7 @@ return [
     'gate' => [
         'years'        => 4,
         'wife'         => 'Xantipphy',
+        'wife_nick'    => 'Meowmy',
         'husband'      => 'Ra-ouf',
         'husband_nick' => 'KRAD',
         'date'         => '[Anniversary date]',
@@ -76,16 +83,19 @@ return [
             '16.jpg' => 'Home is wherever you are 🌙',
             '17.jpg' => 'Adventures with my favorite person',
             '18.jpg' => 'Just us and the big blue sea',
+            '19.jpg' => 'Cute na, cute pa 🥰',
+            '20.jpg' => 'Caught mid-sentence, as always 😂',
+            '21.jpg' => 'One more kiss for the road 😘',
         ],
         // Your personal message, one paragraph per line, used exactly as written.
-        'message_title' => 'A message from your KRAD',
+        'message_title' => 'To my Meowmy, from your KRAD',
         // DRAFT in Tausug — please check the wording before she reads it.
         'message'       => [
-            'Xantipphy, asawa ku — upat tahun na kita magdūm. Alhamdulillah, ikaw in pinakamarayaw kiyabugay kaku sin Tuhan.',
-            'Salamat ha pagsabar mu kaku, ha pag-atiman mu kaku, iban ha lasa mu kaku adlaw-adlaw.',
+            'Xantipphy, meeowmy — upat tahun na kita magdūm. Alhamdulillah, ikaw in pinakamarayaw kiyabugay kaku sin Tuhan.',
+            'Magsukul ha pagsabar mu kaku, ha pag-atiman mu kaku, iban ha lasa mu kaku adlaw-adlaw.',
             'Misan aku miskin, misan aku kulang, in atay ku kaymu da sadja.',
             'Kalasahan ta kaw, bilahi ku kaw, sampay pa ha katapusan sin umul ku.',
-            'Happy 4th anniversary, asawa ku. 💕',
+            'Happy 4th anniversary mee!. 💕',
         ],
         'message_sign'  => 'Forever yours, Ra-ouf (KRAD)',
 
@@ -105,7 +115,7 @@ return [
         'scare_image'   => 'assets/img/scare.jpg',
         'scare_text'    => 'BOO!',
         'scare_sound'   => true,            // a synthesized scream + ticking (no audio files)
-        'scare_lol'     => 'HAHAHA nagulat ka no? 😂',
+        'scare_lol'     => 'HAHAHA nagulat ka no, Meowmy? 😂',
         'scare_sub'     => 'Joke lang, love. Here’s your real gift 💕',
 
         // ── "Evidence" photos clipped to NDA clauses (clause number => photo) ────────
@@ -137,19 +147,22 @@ return [
     ],
 
     'hero' => [
-        'kicker' => 'Internal Medicine · [City]',
+        'kicker' => 'Internal Medicine · Zamboanga City',
         // DRAFT
         'lede'   => 'Careful, unhurried medicine for adults — from a first question to a condition you have lived with for years.',
+        // Shown instead of buttons on the one-screen page.
+        'soon'   => 'Free online consultations — opening soon',
         // Best as a transparent cut-out PNG (subject on no background), ~1400px tall.
-        'image'  => 'assets/img/hero.png',
+        // A normal photo gets an arch frame; a transparent cut-out .png stands on the floor.
+        'image'  => 'assets/img/portrait.jpg',
     ],
 
     // "At a glance" strip under the hero — real facts only, no invented numbers.
     'glance' => [
         'Specialty'     => 'Internal Medicine',
-        'Trained at'    => '[Medical school]',
-        'Certification' => '[Board certification]',
-        'Consults in'   => '[Languages]',
+        'Trained at'    => 'Zamboanga City Medical Center',
+        'Training'      => '3rd-year IM resident · graduating',
+        'Free consult'  => 'Opening soon',
     ],
 
     'about' => [
@@ -158,8 +171,8 @@ return [
             '[Biography, paragraph one — where she trained, and what drew her to internal medicine. Best written in her own voice.]',
             '[Paragraph two — where she practises today, and who she cares for.]',
         ],
-        'image'     => 'assets/img/about.jpg',
-        'image_alt' => 'Dr. Xantipphy [Surname]',
+        'image'     => 'assets/img/portrait.jpg',
+        'image_alt' => 'Dr. Xantipphy Mae N. Ibrahim-Jumli',
     ],
 
     'care' => [
@@ -219,8 +232,8 @@ return [
     'contact' => [
         'email'   => '[email@domain.com]',
         'phone'   => '[Phone]',
-        'clinic'  => '[Clinic name]',
-        'address' => '[Street], [City], [Region]',
+        'clinic'  => 'Zamboanga City Medical Center',
+        'address' => 'Zamboanga City, Philippines',
         'hours'   => '[Consultation hours]',
         'image'   => 'assets/img/contact.png',
         'social'  => [

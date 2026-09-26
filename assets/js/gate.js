@@ -292,7 +292,10 @@ function initNda() {
   const sigHint = $('[data-sig-hint]');
   const normalize = (s) => s.toLowerCase().replace(/^\s*dr\.?\s*/, '').replace(/[^a-z]/g, '');
   const expected = normalize(name.dataset.expected || '');
-  const isHer = () => expected !== '' && normalize(name.value) === expected;
+  // Her first name, her full name, or "Meowmy" all count as her signature.
+  const accepted = [expected, ...(name.dataset.also || '').split('|').map(normalize)].filter(Boolean);
+  const isHer = () => accepted.includes(normalize(name.value));
+  const partOfHer = (typed) => accepted.some((a) => a.startsWith(typed));
 
   const update = () => {
     preview.textContent = name.value;
@@ -300,10 +303,10 @@ function initNda() {
     const ok = isHer();
 
     name.classList.toggle('is-valid', ok);
-    name.classList.toggle('is-wrong', typed.length >= 3 && !ok && !expected.startsWith(typed));
-    if (ok) sigHint.textContent = '✓ Identity confirmed. Hi, love 💕';
+    name.classList.toggle('is-wrong', typed.length >= 3 && !ok && !partOfHer(typed));
+    if (ok) sigHint.textContent = typed === 'meowmy' ? '✓ Meowmy confirmed. Purr-fect 🐱' : '✓ Identity confirmed. Hi, love 💕';
     else if (!typed) sigHint.textContent = '';
-    else if (expected.startsWith(typed)) sigHint.textContent = 'Keep going… ✍️';
+    else if (partOfHer(typed)) sigHint.textContent = 'Keep going… ✍️';
     else sigHint.textContent = 'Hmm 🤨 only the Wife can sign this. Type your name.';
 
     btn.disabled = !(ok && read.checked);

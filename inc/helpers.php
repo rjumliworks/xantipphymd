@@ -42,7 +42,10 @@ function media(string $src, string $alt, string $label, bool $eager = false, str
         $size  = @getimagesize($file);
         $dims  = $size ? sprintf(' width="%d" height="%d"', $size[0], $size[1]) : '';
         $load  = $eager ? ' loading="eager" fetchpriority="high"' : ' loading="lazy"';
-        return sprintf('<img src="%s" alt="%s"%s%s decoding="async">', asset($src), e($alt), $dims, $load);
+        // A regular photo in a "cutout" slot gets an arch frame instead of standing on the floor.
+        $isCutout = strtolower(pathinfo($src, PATHINFO_EXTENSION)) === 'png';
+        $class = ($variant === 'cutout' && !$isCutout) ? ' class="media-arch"' : '';
+        return sprintf('<img src="%s" alt="%s"%s%s%s decoding="async">', asset($src), e($alt), $dims, $load, $class);
     }
 
     return sprintf(

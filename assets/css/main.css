@@ -1,4 +1,4 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    Dr. Xantipphy — main stylesheet (v2, rose)
    1. Tokens & themes     5. Intro & header     9. Consultation
    2. Base                6. Hero              10. Letter
@@ -993,4 +993,61 @@ strong { font-weight: 600; }
 }
 @media (prefers-reduced-motion: reduce) and (max-width: 63.99rem) {
   .js .hero__shape { clip-path: polygon(0 55%, 100% 100%, 0 100%) !important; }
+}
+
+/* A real photo in the hero / letter / contact slot: framed as an arch */
+.media-arch {
+  display: block;
+  width: min(84%, 27rem) !important;
+  max-height: none !important;
+  aspect-ratio: 3 / 4;
+  margin-inline: auto;
+  object-fit: cover !important;
+  object-position: 50% 22%;
+  border-radius: 999px 999px 24px 24px;
+  border: 6px solid var(--surface);
+  box-shadow: var(--shadow);
+  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+}
+@media (max-width: 63.99rem) { .media-arch { width: min(78%, 22rem) !important; } }
+.about__circle > img { object-position: 50% 22%; }
+
+/* One-screen landing (all sections off) */
+.soon {
+  display: inline-flex;
+  align-items: center;
+  gap: .7rem;
+  padding: .8rem 1.3rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+@media (min-width: 64rem) {
+  .is-single .hero {
+    height: 100svh;
+    min-height: 40rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-bottom: clamp(1.5rem, 4vh, 3rem);
+  }
+  .is-single .hero__grid { min-height: 0; flex: 1; }
+  .is-single .hero__media > img.media-arch { max-height: calc(100svh - var(--header-h) - 15.5rem) !important; width: auto !important; margin-bottom: 1.5rem; }
+}
+@media (min-width: 64rem) and (min-height: 40rem) {
+  html:has(body.is-single) { overflow: hidden; }
+}
+
+.menu-toggle[hidden] { display: none !important; }
+@media (min-width: 64rem) {
+  .is-single .hero__title { font-size: min(var(--fs-hero), 7.2vh); }
+  .is-single .hero__lede { margin-top: min(1.5rem, 2vh); }
+  .is-single .hero__actions { margin-top: min(2.25rem, 3vh); }
+  .is-single .hero__grid { align-items: center; }
+  .is-single .hero__media { align-self: center; }
+  .is-single .hero__media > img.media-arch { max-height: calc(100svh - var(--header-h) - 14rem) !important; margin-bottom: 0; }
+  .is-single .glance { margin-top: min(2rem, 3vh); }
 }

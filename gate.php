@@ -8,6 +8,9 @@ $suf = ($n % 100 >= 11 && $n % 100 <= 13) ? 'th' : (['th', 'st', 'nd', 'rd'][$n 
 $wife    = $g['wife'];
 $husband = $g['husband'];
 $nick    = $g['husband_nick'] ?? '';
+$wifeNick = $g['wife_nick'] ?? '';
+$pp       = $c['person'];
+$wifeFull = preg_replace('/\s+/', ' ', trim("{$pp['first_name']} " . ($pp['middle'] ?? '') . " {$pp['last_name']}"));
 
 /* Photos for the husband reactions: per-mood file if present, else me.*, else null (emoji stand-in). */
 $findPhoto = function (string $base) {
@@ -98,6 +101,7 @@ $exhibit = function (int $clause) use ($g) {
         <h1 class="big" id="s1-title">
           Happy <?= $n . $suf ?> Anniversary,<br>
           <span class="big__name"><?= t($wife) ?>!</span>
+          <?php if ($wifeNick): ?><span class="big__nick">a.k.a. my <?= e($wifeNick) ?> 🐱</span><?php endif; ?>
         </h1>
         <p class="sub"><?= $n ?> years, zero regrets.<sup>*</sup></p>
         <p class="tiny">*Terms and conditions apply. See page 3.</p>
@@ -124,7 +128,7 @@ $exhibit = function (int $clause) use ($g) {
         <span class="window__title">wishlist.exe</span>
       </div>
       <div class="window__body">
-        <p class="kicker">Yay! Knew it. 💕</p>
+        <p class="kicker">Yay! Knew it<?= $wifeNick ? ', ' . e($wifeNick) : '' ?>. 💕</p>
         <h2 class="big big--md" id="s2-title">What do you want for today?</h2>
         <p class="sub">Pick as many as you like. <span class="tiny tiny--inline">(Budget not guaranteed.)</span></p>
 
@@ -181,7 +185,7 @@ $exhibit = function (int $clause) use ($g) {
         <p class="doc__preamble">
           This Agreement is entered into on <strong><?= t($g['date']) ?></strong>, the <?= $n . $suf ?> anniversary, by and between
           <strong><?= t($husband) ?></strong> (a.k.a. “<strong><?= e($nick) ?></strong>”, hereinafter “<strong>the Husband</strong>” or “<strong>the Always-Right Party</strong>”) and
-          <strong>Dr. <?= t($wife) ?></strong> (hereinafter “<strong>the Wife</strong>” or “<strong>the Boss, Technically</strong>”).
+          <strong>Dr. <?= t($wifeFull) ?></strong> of <?= e($pp['hospital'] ?? '') ?> (a.k.a. “<strong><?= e($wifeNick) ?></strong>”, hereinafter “<strong>the Wife</strong>” or “<strong>the Boss, Technically</strong>”).
         </p>
 
         <ol class="clauses">
@@ -241,7 +245,7 @@ $exhibit = function (int $clause) use ($g) {
               <label class="sign__label" for="sig-name">The Wife — sign here</label>
               <p class="sign__line"><span class="script" data-sig-preview aria-hidden="true"></span></p>
               <input class="sign__input" id="sig-name" type="text" autocomplete="off" autocapitalize="words" spellcheck="false"
-                     placeholder="Your name" required data-expected="<?= e($wife) ?>" aria-describedby="sig-hint">
+                     placeholder="Your name" required data-expected="<?= e($wife) ?>" data-also="<?= e($wifeFull . '|' . $wifeNick) ?>" aria-describedby="sig-hint">
               <p class="sign__hint" id="sig-hint" data-sig-hint aria-live="polite"></p>
             </div>
           </div>
