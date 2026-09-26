@@ -115,6 +115,7 @@ return [
         'scare_image'   => 'assets/img/scare.jpg',
         'scare_text'    => 'BOO!',
         'scare_sound'   => true,            // a synthesized scream + ticking (no audio files)
+        'sfx'           => true,            // little sound effects throughout (boing, sob, ding…) + a 🔊/🔇 button
         'scare_lol'     => 'HAHAHA nagulat ka no, Meowmy? 😂',
         'scare_sub'     => 'Joke lang, love. Here’s your real gift 💕',
 

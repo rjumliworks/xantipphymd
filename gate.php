@@ -69,7 +69,7 @@ $exhibit = function (int $clause) use ($g) {
 <link rel="stylesheet" href="<?= asset('assets/css/gate-gift.css') ?>">
 <script type="module" src="<?= asset('assets/js/gate.js') ?>"></script>
 </head>
-<body>
+<body data-sound="<?= !empty($g['sfx']) ? '1' : '0' ?>">
 
 <div class="deco" aria-hidden="true">
   <span class="deco__star deco__star--1">✦</span>

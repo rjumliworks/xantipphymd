@@ -7,6 +7,8 @@
  *
  * Uses assets/img/me*.png when present (see config.php → gate), otherwise an emoji face.
  */
+import { sfx } from './sfx.js';
+
 const data = JSON.parse(document.getElementById('reaction-data')?.textContent || '{}');
 const photos = data.photos || {};
 const eyes = data.eyes || [[38, 44], [62, 44]];
@@ -83,6 +85,7 @@ export function react(mood = 'cry', key = 'default', line) {
 
   stage.appendChild(el);
   active = el;
+  ({ cry: sfx.sob, happy: sfx.chime, faint: sfx.faint }[mood] || (() => {}))();
   void el.offsetWidth;
   el.classList.add('is-in');
 

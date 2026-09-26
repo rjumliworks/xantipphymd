@@ -4,6 +4,7 @@
  * Nothing here is sent anywhere; only a "gate-done" flag is kept in the browser.
  */
 import { react } from './reactions.js';
+import { sfx, getCtx, soundEnabled, initSound } from './sfx.js';
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -172,6 +173,7 @@ function initQuestion() {
     yes.style.left = `${x}px`;
     yes.style.top = `${y}px`;
     say(toast, lines[count++ % lines.length]);
+    sfx.boing();
   }
 
   // Mouse: dodge as soon as the pointer gets close, before it can even hover.
@@ -204,6 +206,7 @@ function initQuestion() {
 
   no.addEventListener('click', () => {
     say(toast, 'Yay! 🎉');
+    sfx.yay();
     celebrate(() => go(2));
   });
 }
@@ -225,8 +228,10 @@ function initWishlist() {
         say(toast, 'ALL of them?! Okay. Bold. I love that for you.');
         react('faint');
       } else if (box.checked) {
+        sfx.pop();
         react('cry', box.value.toLowerCase());
       } else {
+        sfx.unpop();
         react('happy');
       }
     });
@@ -241,6 +246,7 @@ function initWishlist() {
 
     // A little card from him first, then the NDA.
     const note = $('[data-note]');
+    sfx.pop();
     if (note && typeof note.showModal === 'function') note.showModal();
     else go(3);
   });
@@ -326,6 +332,7 @@ function initNda() {
     if (btn.disabled) return;
     btn.disabled = true;
     say(toast, 'Signed, sealed, delivered. 💌 Unlocking your gift…');
+    sfx.yay();
     confetti(140);
     setTimeout(() => go(4), reduced ? 300 : 1600);
   });
@@ -369,6 +376,7 @@ function initGift() {
     btn.addEventListener('click', () => {
       opener = btn;
       show(+btn.dataset.photo);
+      sfx.pop();
       box.showModal();
     });
   });
@@ -428,6 +436,7 @@ function initPager() {
     if (busy || to < 0 || to >= pages || to === page) return;
     busy = true;
     book.dataset.dir = dir;
+    sfx.whoosh();
     const leaving = items.filter((li) => +li.dataset.page === page);
     leaving.forEach((li) => { li.classList.remove('is-entering'); li.classList.add('is-leaving'); });
     setTimeout(() => {
@@ -531,7 +540,8 @@ function initMessage() {
         icon.textContent = ico;
         status.textContent = text;
         loader.classList.toggle('is-error', mood === 'error');
-        if (i === LOADING.length - 1) setTimeout(showMailroom, reduced ? 100 : 700);
+        if (mood === 'error') sfx.error(); else sfx.tick();
+        if (i === LOADING.length - 1) { sfx.ding(); setTimeout(showMailroom, reduced ? 100 : 700); }
       }, i * stepMs);
     });
   }
@@ -566,6 +576,7 @@ function initMessage() {
     taps++;
 
     if (taps === 1) {
+      sfx.boing();
       dodge();
       say('Hmm… too easy. Catch me first 😏');
       hint.textContent = 'Tap it again';
@@ -574,6 +585,7 @@ function initMessage() {
     }
 
     if (taps === 2) {
+      sfx.whoosh();
       env.style.setProperty('--x', '0px');
       env.style.setProperty('--y', '0px');
       env.style.setProperty('--r', '0deg');
@@ -588,6 +600,7 @@ function initMessage() {
 
     // 3rd tap: identity check, then open
     opening = true;
+    sfx.scan();
     env.classList.remove('is-spin');
     env.classList.add('is-scanning', 'is-shake');
     say('Scanning fingerprint… 🔍');
@@ -603,6 +616,8 @@ function initMessage() {
   // 3) open it up
   function openEnvelope() {
     env.classList.add('is-open');
+    sfx.rustle();
+    setTimeout(() => sfx.yay(), 500);
     say('Opening… 💞');
     const r = env.getBoundingClientRect();
     setTimeout(() => {
@@ -669,6 +684,7 @@ function initQuiz() {
       lock.textContent = '🔓';
       lock.classList.add('is-open');
       say(toast, 'Correct! ✅');
+      sfx.ding();
       tries.textContent = wrong ? `Solved after ${wrong} wrong ${wrong === 1 ? 'try' : 'tries'} 😏` : 'First try?! 😳';
       hint.hidden = true;
       done.hidden = false;
@@ -686,6 +702,7 @@ function initQuiz() {
     void input.offsetWidth;
     input.classList.add('is-wrong');
     say(toast, nopes[(wrong - 1) % nopes.length]);
+    sfx.buzz();
     tries.textContent = `Wrong answers: ${wrong}`;
     if (wrong % 3 === 0) react('cry', 'default', wrong >= 6 ? 'You really forgot?! 😭' : 'Seriously?! 😭');
 
@@ -719,13 +736,11 @@ function initQuiz() {
 /* The prank: 5-4-3-2-1 → BOO! → HAHAHA ------------------------------------ */
 
 let audio = null;
-const soundOn = () => $('[data-scare]')?.dataset.sound === '1';
+const soundOn = () => $('[data-scare]')?.dataset.sound === '1' && soundEnabled();
 
 function warmAudio() {
   if (!soundOn()) return;
-  const AC = window.AudioContext || window.webkitAudioContext;
-  if (!audio && AC) audio = new AC();
-  if (audio?.state === 'suspended') audio.resume();
+  audio = getCtx();
 }
 
 function beep(freq, dur = 0.09, vol = 0.15, type = 'square') {
@@ -870,6 +885,7 @@ function startScare() {
   }
 }
 
+initSound();
 initQuestion();
 initWishlist();
 initNda();
