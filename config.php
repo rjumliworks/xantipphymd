@@ -21,6 +21,15 @@ return [
         'region'     => '[Region]',
     ],
 
+    // Which sections the site shows. For the anniversary gift it's just the intro,
+    // About and the personal letter; switch the rest back on for the professional site.
+    'sections' => [
+        'care'         => false,
+        'consultation' => false,
+        'education'    => false,
+        'contact'      => false,
+    ],
+
     'site' => [
         'url'      => '',                     // e.g. https://drxantipphy.com — used for canonical + OG
         'og_image' => 'assets/img/og.jpg',
@@ -70,10 +79,13 @@ return [
         ],
         // Your personal message, one paragraph per line, used exactly as written.
         'message_title' => 'A message from your KRAD',
+        // DRAFT in Tausug — please check the wording before she reads it.
         'message'       => [
-            '[Your personal message to her — write it however you like: English, Tagalog, or your own language.]',
-            '[Second paragraph.]',
-            '[A last line.]',
+            'Xantipphy, asawa ku — upat tahun na kita magdūm. Alhamdulillah, ikaw in pinakamarayaw kiyabugay kaku sin Tuhan.',
+            'Salamat ha pagsabar mu kaku, ha pag-atiman mu kaku, iban ha lasa mu kaku adlaw-adlaw.',
+            'Misan aku miskin, misan aku kulang, in atay ku kaymu da sadja.',
+            'Kalasahan ta kaw, bilahi ku kaw, sampay pa ha katapusan sin umul ku.',
+            'Happy 4th anniversary, asawa ku. 💕',
         ],
         'message_sign'  => 'Forever yours, Ra-ouf (KRAD)',
 
@@ -87,6 +99,14 @@ return [
             'Okay fine: b-e-m-b-a-n-… you know the last letter 🤭',
         ],
         'quiz_correct'  => 'HAHAHA I knew it! 🙈😏',
+
+        // ── The prank after the right answer: countdown → jump scare → laugh ─────────
+        // Put your ugliest / scariest photo at this path for the jump scare (👹 until then).
+        'scare_image'   => 'assets/img/scare.jpg',
+        'scare_text'    => 'BOO!',
+        'scare_sound'   => true,            // a synthesized scream + ticking (no audio files)
+        'scare_lol'     => 'HAHAHA nagulat ka no? 😂',
+        'scare_sub'     => 'Joke lang, love. Here’s your real gift 💕',
 
         // ── "Evidence" photos clipped to NDA clauses (clause number => photo) ────────
         // Add the files to show them; missing ones show a small placeholder.

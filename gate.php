@@ -415,6 +415,38 @@ $exhibit = function (int $clause) use ($g) {
 </dialog>
 <script type="application/json" id="memories-data"><?= json_encode(array_map(fn ($m) => ['src' => $m['full'] ? html_entity_decode($m['full']) : null, 'caption' => $m['caption']], $memories), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?></script>
 
+<!-- The prank after "bembang": countdown → jump scare → laugh -->
+<?php
+  $scareImg = null;
+  foreach ([$g['scare_image'] ?? '', 'assets/img/scare.png', 'assets/img/scare.jpg'] as $try) {
+      if ($try && is_file(__DIR__ . '/' . $try)) { $scareImg = resized($try, 1000); break; }
+  }
+  $laughPhoto = $reactionData['photos']['happy'] ?? $reactionData['photos']['default'];
+?>
+<div class="scare" data-scare data-sound="<?= !empty($g['scare_sound']) ? '1' : '0' ?>" hidden>
+  <div class="scare__count" data-count-wrap>
+    <p class="scare__label">Opening your gift in…</p>
+    <p class="scare__num" data-count aria-live="assertive">5</p>
+  </div>
+
+  <div class="scare__boo" data-boo hidden>
+    <div class="scare__face" aria-hidden="true">
+      <?php if ($scareImg): ?><img src="<?= $scareImg ?>" alt=""><?php else: ?><span>👹</span><?php endif; ?>
+    </div>
+    <p class="scare__text"><?= e($g['scare_text'] ?? 'BOO!') ?></p>
+  </div>
+
+  <div class="scare__reveal" data-lol hidden>
+    <div class="scare__laugh" aria-hidden="true">
+      <?php if ($laughPhoto): ?><img src="<?= $laughPhoto ?>" alt=""><?php else: ?><span>😂</span><?php endif; ?>
+    </div>
+    <p class="scare__lol" role="status"><?= e($g['scare_lol'] ?? 'HAHAHA 😂') ?></p>
+    <p class="scare__sub"><?= e($g['scare_sub'] ?? '') ?></p>
+    <?php if ($nick): ?><p class="scare__from">— your <?= e($nick) ?> 😘</p><?php endif; ?>
+    <button class="btn btn--primary" type="button" data-finish-real>Open my real gift 🎁 →</button>
+  </div>
+</div>
+
 <!-- The celebration after she answers "No" -->
 <div class="celebrate" data-celebrate hidden>
   <div class="celebrate__hearts" aria-hidden="true" data-hearts></div>

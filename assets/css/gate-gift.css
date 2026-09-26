@@ -327,3 +327,127 @@
   animation: word-in .7s var(--ease) both;
 }
 [data-quiz-done]:not([hidden]) { display: grid; justify-items: center; gap: 1rem; }
+
+/* The prank: countdown -> jump scare -> laugh ---------------------------------- */
+
+.scare {
+  --dark: 0;
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  overflow: hidden;
+  color: #fff;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 50%, rgb(120 0 20 / calc(var(--dark) * .55)), transparent 70%),
+    rgb(calc(40 - var(--dark) * 30) calc(20 - var(--dark) * 15) calc(30 - var(--dark) * 22));
+  transition: background .8s ease;
+  animation: fade .4s ease both;
+}
+.scare[hidden] { display: none !important; }
+.scare::after {
+  /* heavy vignette that closes in as the count drops */
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 calc(80px + var(--dark) * 220px) calc(var(--dark) * 60px) #000;
+  transition: box-shadow .8s ease;
+}
+
+.scare__count { position: relative; z-index: 1; display: grid; gap: .5rem; }
+.scare__label { font-family: var(--pixel); font-size: clamp(1.4rem, 1rem + 1.5vw, 2rem); letter-spacing: .08em; opacity: .85; }
+.scare__num {
+  font-family: var(--display);
+  font-size: clamp(9rem, 38vmin, 20rem);
+  line-height: 1;
+  color: var(--pink);
+  -webkit-text-stroke: 4px #fff;
+  paint-order: stroke fill;
+  text-shadow: 0 0 40px rgb(255 111 168 / .6);
+}
+.scare__num.is-tick { animation: count-pop .9s cubic-bezier(.2, .9, .3, 1) both; }
+.scare__num.is-late { color: var(--red); text-shadow: 0 0 60px rgb(255 40 60 / .8); }
+@keyframes count-pop {
+  0%   { opacity: 0; transform: scale(1.9); }
+  25%  { opacity: 1; transform: scale(.92); }
+  45%  { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+.scare.is-heartbeat { animation: heartbeat .9s ease-in-out infinite; }
+@keyframes heartbeat { 12% { filter: brightness(1.25); } 24% { filter: brightness(1); } 36% { filter: brightness(1.15); } }
+
+/* BOO */
+.scare.is-boo { background: #000; animation: boo-flash .5s ease-out both; }
+@keyframes boo-flash { 0% { background: #fff; } 12% { background: #7a0010; } 100% { background: #000; } }
+.scare__boo { position: relative; z-index: 2; display: grid; justify-items: center; gap: 1rem; }
+.scare__face {
+  display: grid;
+  place-items: center;
+  width: min(80vmin, 38rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  font-size: min(60vmin, 28rem);
+  line-height: 1;
+  filter: drop-shadow(0 0 40px rgb(255 0 40 / .8)) contrast(1.2) saturate(1.3);
+  animation: lunge .35s cubic-bezier(.1, 1.6, .3, 1) both, jitter .07s linear .35s 12;
+}
+.scare__face img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(.4) sepia(.35) hue-rotate(-30deg) contrast(1.4); }
+@keyframes lunge { from { transform: scale(.1) rotate(-20deg); } }
+@keyframes jitter {
+  25% { transform: translate(-8px, 5px) rotate(-2deg) scale(1.03); }
+  50% { transform: translate(7px, -6px) rotate(2deg); }
+  75% { transform: translate(-5px, -4px) rotate(-1deg) scale(1.02); }
+}
+.scare__text {
+  font-family: var(--display);
+  font-size: clamp(4rem, 14vmin, 9rem);
+  line-height: 1;
+  color: var(--red);
+  text-shadow: 4px 0 #00e5ff, -4px 0 #ff00c8, 0 0 30px rgb(255 0 40 / .9);
+  animation: jitter .07s linear 12;
+}
+
+/* LOL reveal */
+.scare.is-lol {
+  background: repeating-conic-gradient(from 0deg at 50% 45%, #FFD6E7 0 15deg, #FFF0B8 15deg 30deg);
+  color: var(--ink);
+}
+.scare.is-lol::after { box-shadow: none; }
+.scare__reveal { position: relative; z-index: 1; display: grid; justify-items: center; gap: .9rem; width: min(34rem, 100%); }
+.scare__laugh {
+  display: grid;
+  place-items: center;
+  width: clamp(140px, 34vw, 190px);
+  aspect-ratio: 1;
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  background: var(--yellow);
+  box-shadow: 8px 8px 0 var(--ink);
+  overflow: hidden;
+  font-size: clamp(5rem, 20vw, 7rem);
+  line-height: 1;
+  animation: pop-face .6s var(--ease) both, dance .9s ease-in-out .6s infinite;
+}
+.scare__laugh img { width: 100%; height: 100%; object-fit: cover; }
+.scare__lol {
+  font-family: var(--display);
+  font-size: clamp(2rem, 1.2rem + 4vw, 3.4rem);
+  line-height: 1.1;
+  color: var(--pink);
+  -webkit-text-stroke: 2px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 4px 4px 0 var(--ink);
+  animation: word-in .6s var(--ease) .2s both;
+}
+.scare__sub { font-size: 1.15rem; font-weight: 500; animation: word-in .6s var(--ease) .45s both; }
+.scare__from { font-family: var(--pixel); font-size: 1.5rem; line-height: 1; animation: word-in .6s var(--ease) .6s both; }
+.scare__reveal .btn { animation: word-in .6s var(--ease) .9s both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .scare__face, .scare__text, .scare.is-heartbeat, .scare.is-boo { animation: none !important; }
+}

@@ -671,7 +671,10 @@ function initQuiz() {
       done.hidden = false;
       confetti(150);
       react('happy', null, 'Hehe 🙈 same, love');
+      warmAudio();   // unlock sound now, while we still have her click
       setTimeout(() => $('[data-finish]').focus({ preventScroll: true }), 300);
+      // …and then the prank begins by itself.
+      setTimeout(startScare, reduced ? 800 : 2400);
       return;
     }
 
@@ -699,12 +702,169 @@ function initQuiz() {
     setTimeout(() => input.focus({ preventScroll: true }), 400);
   });
 
-  // On to the love letter, then her site.
-  $('[data-finish]').addEventListener('click', () => {
+  // "Open my gift" starts the prank right away (it also starts by itself).
+  $('[data-finish]').addEventListener('click', () => { warmAudio(); startScare(); });
+
+  // After the laugh: on to the love letter, then her site.
+  $('[data-finish-real]').addEventListener('click', () => {
     // A one-time pass: the site lets her in once, then any refresh starts over at the gate.
     try { sessionStorage.setItem('gate-pass', '1'); } catch { /* fine */ }
     location.assign('./');
   });
+}
+
+/* The prank: 5-4-3-2-1 → BOO! → HAHAHA ------------------------------------ */
+
+let audio = null;
+const soundOn = () => $('[data-scare]')?.dataset.sound === '1';
+
+function warmAudio() {
+  if (!soundOn()) return;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!audio && AC) audio = new AC();
+  if (audio?.state === 'suspended') audio.resume();
+}
+
+function beep(freq, dur = 0.09, vol = 0.15, type = 'square') {
+  if (!audio) return;
+  const t = audio.currentTime;
+  const o = audio.createOscillator();
+  const g = audio.createGain();
+  o.type = type;
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g).connect(audio.destination);
+  o.start(t);
+  o.stop(t + dur + 0.02);
+}
+
+function thump(at = 0, vol = 0.6) {
+  if (!audio) return;
+  const t = audio.currentTime + at;
+  const o = audio.createOscillator();
+  const g = audio.createGain();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(110, t);
+  o.frequency.exponentialRampToValueAtTime(40, t + 0.25);
+  g.gain.setValueAtTime(vol, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+  o.connect(g).connect(audio.destination);
+  o.start(t);
+  o.stop(t + 0.35);
+}
+
+// A cartoon scream: a noise burst sweeping down, a wobbling screech and a low hit.
+function scream() {
+  if (!audio) return;
+  const t = audio.currentTime;
+  const master = audio.createGain();
+  master.gain.value = 0.55;
+  master.connect(audio.destination);
+
+  const len = Math.floor(audio.sampleRate * 1.2);
+  const buf = audio.createBuffer(1, len, audio.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+  const noise = audio.createBufferSource();
+  noise.buffer = buf;
+  const band = audio.createBiquadFilter();
+  band.type = 'bandpass';
+  band.Q.value = 1.3;
+  band.frequency.setValueAtTime(2600, t);
+  band.frequency.exponentialRampToValueAtTime(650, t + 1.1);
+  const ng = audio.createGain();
+  ng.gain.setValueAtTime(0.0001, t);
+  ng.gain.exponentialRampToValueAtTime(0.8, t + 0.03);
+  ng.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
+  noise.connect(band).connect(ng).connect(master);
+  noise.start(t);
+  noise.stop(t + 1.25);
+
+  const screech = audio.createOscillator();
+  screech.type = 'sawtooth';
+  screech.frequency.setValueAtTime(1150, t);
+  screech.frequency.exponentialRampToValueAtTime(300, t + 1.1);
+  const wobble = audio.createOscillator();
+  const wobbleAmt = audio.createGain();
+  wobble.frequency.value = 26;
+  wobbleAmt.gain.value = 70;
+  wobble.connect(wobbleAmt).connect(screech.frequency);
+  const sg = audio.createGain();
+  sg.gain.setValueAtTime(0.0001, t);
+  sg.gain.exponentialRampToValueAtTime(0.35, t + 0.03);
+  sg.gain.exponentialRampToValueAtTime(0.0001, t + 1.15);
+  screech.connect(sg).connect(master);
+  screech.start(t);
+  wobble.start(t);
+  screech.stop(t + 1.2);
+  wobble.stop(t + 1.2);
+
+  thump(0, 1);
+}
+
+let scaring = false;
+
+function startScare() {
+  if (scaring) return;
+  scaring = true;
+
+  const overlay = $('[data-scare]');
+  const countWrap = $('[data-count-wrap]');
+  const num = $('[data-count]');
+  const label = $('.scare__label', overlay);
+  const boo = $('[data-boo]');
+  const lol = $('[data-lol]');
+
+  overlay.hidden = false;
+  document.body.style.overflow = 'hidden';
+
+  const show = (n) => {
+    num.textContent = n;
+    num.classList.remove('is-tick');
+    void num.offsetWidth;
+    num.classList.add('is-tick');
+    num.classList.toggle('is-late', n <= 2);
+    overlay.style.setProperty('--dark', ((5 - n) / 4).toFixed(2));
+    overlay.classList.toggle('is-heartbeat', n <= 3 && !reduced);
+    beep(520 - (5 - n) * 50, 0.1, 0.12);
+    if (n <= 3) { thump(0, 0.35); thump(0.18, 0.25); }
+  };
+
+  let n = 5;
+  show(n);
+  const timer = setInterval(() => {
+    n--;
+    if (n >= 1) { show(n); return; }
+    clearInterval(timer);
+
+    // The pause after "1"… too quiet…
+    num.textContent = '';
+    label.textContent = '…';
+    overlay.classList.remove('is-heartbeat');
+    setTimeout(goBoo, reduced ? 400 : 1500);
+  }, 1000);
+
+  function goBoo() {
+    countWrap.hidden = true;
+    boo.hidden = false;
+    overlay.classList.add('is-boo');
+    scream();
+    try { navigator.vibrate?.([250, 80, 350]); } catch { /* fine */ }
+    setTimeout(goLol, reduced ? 1200 : 1900);
+  }
+
+  function goLol() {
+    boo.hidden = true;
+    overlay.classList.remove('is-boo');
+    overlay.classList.add('is-lol');
+    lol.hidden = false;
+    confetti(170);
+    setTimeout(() => confetti(90), 900);
+    beep(660, 0.12, 0.1, 'triangle');
+    setTimeout(() => beep(880, 0.16, 0.1, 'triangle'), 130);
+    setTimeout(() => $('[data-finish-real]').focus({ preventScroll: true }), 900);
+  }
 }
 
 initQuestion();

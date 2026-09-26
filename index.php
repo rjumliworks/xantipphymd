@@ -10,13 +10,16 @@ $pageTitle = "{$fullName} — {$p['role']} in {$p['city']}";
 $metaDesc  = "{$fullName} is an internal medicine physician in {$location}, caring for adults — prevention, everyday concerns and long-term conditions.";
 $year      = date('Y');
 
-$nav = [
+/* Section switches (config.php → sections). About is always on. */
+$on = fn (string $key) => $key === 'about' || !empty($c['sections'][$key]);
+
+$nav = array_filter([
     'about'        => 'About',
     'care'         => 'Care',
     'education'    => 'Education',
     'consultation' => 'Consultation',
     'contact'      => 'Contact',
-];
+], fn ($id) => $on($id), ARRAY_FILTER_USE_KEY);
 
 $email     = $c['contact']['email'];
 $emailLink = is_placeholder($email) ? null : 'mailto:' . $email;
@@ -136,7 +139,9 @@ $jsonLd = array_filter([
 
     <div class="site-header__tools">
       <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark theme"><?= theme_icon() ?></button>
-      <a class="btn btn--sm header-cta" href="#contact"><span>Book a consult</span></a>
+      <?php if ($on('contact')): ?>
+        <a class="btn btn--sm header-cta" href="#contact"><span>Book a consult</span></a>
+      <?php endif; ?>
       <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-menu">
         <span class="menu-toggle__label">Menu</span>
         <span class="menu-toggle__icon" aria-hidden="true"><span></span><span></span></span>
@@ -155,7 +160,9 @@ $jsonLd = array_filter([
       </ol>
     </nav>
     <div class="mobile-menu__foot">
-      <a class="btn" href="#contact"><span>Request a consultation</span><?= arrow() ?></a>
+      <?php if ($on('contact')): ?>
+        <a class="btn" href="#contact"><span>Request a consultation</span><?= arrow() ?></a>
+      <?php endif; ?>
       <button class="theme-toggle theme-toggle--text" type="button" data-theme-toggle aria-label="Switch to dark theme"><?= theme_icon() ?><span data-theme-label>Dark</span></button>
     </div>
   </div>
@@ -181,8 +188,13 @@ $jsonLd = array_filter([
         </h1>
         <p class="hero__lede" data-hero="3"><?= t($c['hero']['lede']) ?></p>
         <div class="hero__actions" data-hero="4">
-          <a class="btn" href="#contact"><span>Request a consultation</span><?= arrow() ?></a>
-          <a class="btn btn--ghost" href="#about"><span>About Dr. <?= t($p['first_name']) ?></span></a>
+          <?php if ($on('contact')): ?>
+            <a class="btn" href="#contact"><span>Request a consultation</span><?= arrow() ?></a>
+            <a class="btn btn--ghost" href="#about"><span>About Dr. <?= t($p['first_name']) ?></span></a>
+          <?php else: ?>
+            <a class="btn" href="#about"><span>About Dr. <?= t($p['first_name']) ?></span><?= arrow() ?></a>
+            <a class="btn btn--ghost" href="#letter"><span><?= t($c['letter']['title']) ?></span></a>
+          <?php endif; ?>
         </div>
       </div>
     </div>
@@ -216,7 +228,11 @@ $jsonLd = array_filter([
           <?php endforeach; ?>
         </div>
         <div class="about__actions" data-reveal="text" style="--delay:.15s">
-          <a class="btn" href="#contact"><span>Request a consultation</span><?= arrow() ?></a>
+          <?php if ($on('contact')): ?>
+            <a class="btn" href="#contact"><span>Request a consultation</span><?= arrow() ?></a>
+          <?php else: ?>
+            <a class="btn" href="#letter"><span><?= t($c['letter']['title']) ?></span><?= arrow() ?></a>
+          <?php endif; ?>
         </div>
       </div>
 
@@ -232,6 +248,7 @@ $jsonLd = array_filter([
   <!-- ============================================================
        Care
        ============================================================ -->
+  <?php if ($on('care')): ?>
   <section class="care section section--tint" id="care" aria-labelledby="care-title" data-nav-section="care">
     <div class="wrap">
       <header class="section-head section-head--center">
@@ -251,10 +268,12 @@ $jsonLd = array_filter([
       </ul>
     </div>
   </section>
+  <?php endif; ?>
 
   <!-- ============================================================
        Consultation
        ============================================================ -->
+  <?php if ($on('consultation')): ?>
   <section class="consult section" id="consultation" aria-labelledby="consult-title" data-nav-section="consultation">
     <div class="wrap consult__grid">
       <figure class="consult__figure" data-reveal="image">
@@ -291,6 +310,7 @@ $jsonLd = array_filter([
       </div>
     </div>
   </section>
+  <?php endif; ?>
 
   <!-- ============================================================
        Behind the physician
@@ -328,6 +348,7 @@ $jsonLd = array_filter([
   <!-- ============================================================
        Health notes
        ============================================================ -->
+  <?php if ($on('education')): ?>
   <section class="notes section" id="education" aria-labelledby="notes-title" data-nav-section="education">
     <div class="wrap">
       <header class="section-head section-head--center">
@@ -364,10 +385,12 @@ $jsonLd = array_filter([
       </ul>
     </div>
   </section>
+  <?php endif; ?>
 
   <!-- ============================================================
        Contact — the form is a VISUAL PROTOTYPE: nothing is sent or stored.
        ============================================================ -->
+  <?php if ($on('contact')): ?>
   <section class="contact section" id="contact" aria-labelledby="contact-title" data-nav-section="contact">
     <div class="contact__shape" aria-hidden="true"></div>
     <div class="wrap contact__grid">
@@ -418,6 +441,7 @@ $jsonLd = array_filter([
       </div>
     </div>
   </section>
+  <?php endif; ?>
 </main>
 
 <!-- ============================================================
@@ -431,6 +455,7 @@ $jsonLd = array_filter([
         <p><?= t($fullName) ?> — <?= e($p['role']) ?>, <?= t($location) ?>.</p>
       </div>
 
+      <?php if ($on('contact')): ?>
       <div class="footer__col">
         <p class="footer__head">Reach her</p>
         <ul>
@@ -456,10 +481,13 @@ $jsonLd = array_filter([
           <?php endforeach; ?>
         </ul>
       </div>
+      <?php endif; ?>
     </div>
 
     <div class="footer__legal">
-      <p id="disclaimer"><strong>Medical disclaimer.</strong> <?= t($c['consultation']['disclaimer']) ?></p>
+      <?php if ($on('consultation')): ?>
+        <p id="disclaimer"><strong>Medical disclaimer.</strong> <?= t($c['consultation']['disclaimer']) ?></p>
+      <?php endif; ?>
       <p id="privacy"><strong>Privacy.</strong> <?= t($c['legal']['privacy']) ?></p>
     </div>
 
@@ -467,7 +495,7 @@ $jsonLd = array_filter([
       <p>© <?= $year ?> <?= t($fullName) ?></p>
       <ul class="footer__links">
         <li><a class="link" href="#privacy">Privacy</a></li>
-        <li><a class="link" href="#disclaimer">Medical disclaimer</a></li>
+        <?php if ($on('consultation')): ?><li><a class="link" href="#disclaimer">Medical disclaimer</a></li><?php endif; ?>
         <li><a class="link" href="gate.php">Replay the surprise</a></li>
         <li><button class="theme-toggle theme-toggle--text" type="button" data-theme-toggle aria-label="Switch to dark theme"><?= theme_icon() ?><span data-theme-label>Dark</span></button></li>
       </ul>
