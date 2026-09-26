@@ -77,6 +77,17 @@ return [
         ],
         'message_sign'  => 'Forever yours, Ra-ouf (KRAD)',
 
+        // ── The final question (after the letter). Answer is case-insensitive. ─────────
+        'quiz_question' => 'What is your favorite thing to do with me?',
+        'quiz_answer'   => 'bembang',
+        // Shown after 3, 6 and 9 wrong answers.
+        'quiz_hints'    => [
+            'Hint: it starts with “B” and has 7 letters 😏',
+            'Hint: B E M _ _ _ G 🙈',
+            'Okay fine: b-e-m-b-a-n-… you know the last letter 🤭',
+        ],
+        'quiz_correct'  => 'HAHAHA I knew it! 🙈😏',
+
         // ── "Evidence" photos clipped to NDA clauses (clause number => photo) ────────
         // Add the files to show them; missing ones show a small placeholder.
         'exhibits' => [

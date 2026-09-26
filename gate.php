@@ -63,6 +63,7 @@ $exhibit = function (int $clause) use ($g) {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Homemade+Apple&family=VT323&display=swap">
 <link rel="stylesheet" href="<?= asset('assets/css/gate.css') ?>">
+<link rel="stylesheet" href="<?= asset('assets/css/gate-gift.css') ?>">
 <script type="module" src="<?= asset('assets/js/gate.js') ?>"></script>
 </head>
 <body>
@@ -277,7 +278,7 @@ $exhibit = function (int $clause) use ($g) {
         <?php $perPage = 3; $pages = (int) ceil(count($memories) / $perPage); ?>
         <ul class="scrapbook" data-scrapbook data-pages="<?= $pages ?>" aria-live="polite">
           <?php foreach ($memories as $i => $m): ?>
-            <li style="--i:<?= $i ?>;--k:<?= $i % $perPage ?>" data-page="<?= intdiv($i, $perPage) ?>"<?= $i >= $perPage ? ' hidden' : '' ?>>
+            <li class="k<?= $i % $perPage ?>" style="--i:<?= $i ?>;--k:<?= $i % $perPage ?>" data-page="<?= intdiv($i, $perPage) ?>"<?= $i >= $perPage ? ' hidden' : '' ?>>
               <button class="polaroid polaroid--<?= ['pink', 'yellow', 'blue', 'green'][$i % 4] ?>" type="button" data-photo="<?= $i ?>"
                       aria-label="Open photo <?= $i + 1 ?><?= $m['caption'] ? ': ' . e($m['caption']) : '' ?>">
                 <span class="polaroid__tape" aria-hidden="true"></span>
@@ -358,8 +359,43 @@ $exhibit = function (int $clause) use ($g) {
             <p class="letterpaper__sign"><?= e($g['message_sign']) ?></p>
           </div>
           <div class="actions" data-finish-wrap hidden>
-            <button class="btn btn--primary" type="button" data-finish>One last surprise →</button>
+            <button class="btn btn--primary" type="button" data-to-quiz>One last surprise →</button>
           </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================
+       Screen 6 — one final question before the gift opens
+       ========================================================== -->
+  <section class="screen" data-screen="6" aria-labelledby="s6-title" hidden>
+    <div class="window window--blue">
+      <div class="window__bar">
+        <span class="window__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="window__title">final_security_question.exe</span>
+      </div>
+      <div class="window__body quiz">
+        <p class="kicker">Security check 🔐 — last one, promise</p>
+        <p class="quiz__lock" aria-hidden="true" data-quiz-lock>🔒</p>
+        <h2 class="big big--md" id="s6-title"><?= e($g['quiz_question']) ?></h2>
+
+        <form class="quiz__form" data-quiz novalidate autocomplete="off">
+          <label class="visually-hidden" for="quiz-answer">Your answer</label>
+          <input class="quiz__input" id="quiz-answer" type="text" autocapitalize="off" autocorrect="off" spellcheck="false"
+                 placeholder="Type your answer…" data-quiz-input
+                 data-answer="<?= e(base64_encode(strtolower($g['quiz_answer']))) ?>">
+          <button class="btn btn--primary" type="submit">Submit</button>
+        </form>
+
+        <p class="toast" data-quiz-toast role="status" aria-live="polite"></p>
+        <p class="quiz__tries" data-quiz-tries></p>
+        <p class="quiz__hint" data-quiz-hint aria-live="polite" hidden></p>
+        <script type="application/json" id="quiz-hints"><?= json_encode($g['quiz_hints'], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?></script>
+
+        <div class="actions" data-quiz-done hidden>
+          <p class="quiz__win" data-quiz-win><?= e($g['quiz_correct']) ?></p>
+          <button class="btn btn--primary" type="button" data-finish>Open my gift 🎁 →</button>
         </div>
       </div>
     </div>

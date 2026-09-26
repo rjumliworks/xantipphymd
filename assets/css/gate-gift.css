@@ -1,0 +1,329 @@
+/* ==========================================================================
+   Gate steps 4 & 5 — paginated scrapbook + the dramatic message unboxing.
+   Loaded after gate.css; both screens fit the viewport (no page scroll).
+   ========================================================================== */
+
+/* Fit-to-screen windows ---------------------------------------------------- */
+
+.stage:has([data-screen="4"]:not([hidden])),
+.stage:has([data-screen="5"]:not([hidden])) { padding-block: 1rem; }
+
+[data-screen="4"] .window,
+[data-screen="5"] .window {
+  display: flex;
+  flex-direction: column;
+  height: calc(100svh - 6.25rem);
+  min-height: 30rem;
+}
+[data-screen="4"] .window__bar,
+[data-screen="5"] .window__bar { flex: none; }
+[data-screen="4"] .window__body,
+[data-screen="5"] .window__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: clamp(1rem, 2.5vh, 1.75rem) clamp(1rem, 3vw, 2rem) 1rem;
+}
+[data-screen="4"] .window__body > * { flex: none; }
+
+[data-screen="4"] .kicker { margin-bottom: .3rem; }
+[data-screen="4"] .big--md { font-size: clamp(1.6rem, 1.2rem + 1.8vw, 2.4rem); }
+[data-screen="4"] .sub { margin-top: .2rem; font-size: 1rem; }
+
+/* Scrapbook: 3 per page ---------------------------------------------------- */
+
+[data-screen="4"] .scrapbook {
+  flex: 1 1 auto !important;
+  min-height: 0;
+  align-items: center;
+  align-content: center;
+  margin: .75rem 0;
+  padding: .9rem .5rem .25rem;
+  --pw: max(9rem, calc(100svh - 27.5rem));
+}
+.scrapbook li { display: flex; justify-content: center; }
+.scrapbook .polaroid { width: min(100%, var(--pw)); }
+
+/* old one-off drop-in replaced by per-page animations */
+.screen[data-screen="4"].is-active .scrapbook li { animation: none; }
+.screen[data-screen="4"] .scrapbook li.is-entering { animation: page-in .6s var(--ease) calc(var(--k) * .09s) both; }
+.screen[data-screen="4"] .scrapbook[data-dir="prev"] li.is-entering { animation-name: page-in-prev; }
+.screen[data-screen="4"] .scrapbook li.is-leaving { animation: page-out .28s ease-in forwards; }
+.screen[data-screen="4"] .scrapbook[data-dir="prev"] li.is-leaving { animation-name: page-out-prev; }
+@keyframes page-in      { from { opacity: 0; transform: translateX(80px)  rotate(8deg)  scale(.9); } }
+@keyframes page-in-prev { from { opacity: 0; transform: translateX(-80px) rotate(-8deg) scale(.9); } }
+@keyframes page-out      { to { opacity: 0; transform: translateX(-70px) rotate(-7deg) scale(.9); } }
+@keyframes page-out-prev { to { opacity: 0; transform: translateX(70px)  rotate(7deg)  scale(.9); } }
+
+/* Pager */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: .75rem;
+  border-top: 2px dashed rgb(31 26 23 / .2);
+}
+.pager__btn { min-height: 2.75rem; padding: .5rem 1.1rem; font-size: .95rem; }
+.pager__btn:disabled { visibility: hidden; }
+.pager__mid { display: grid; justify-items: center; gap: .35rem; }
+.pager__dots { display: flex; gap: .35rem; }
+.pager__dots i {
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: #fff;
+  transition: width .35s var(--ease), background-color .2s;
+}
+.pager__dots i.is-on { width: 26px; background: var(--pink); }
+.pager__label { font-family: var(--pixel); font-size: 1.1rem; line-height: 1; color: var(--ink-2); }
+[data-page-next].is-final { background: var(--yellow); animation: nudge 2.4s ease-in-out 1s infinite; }
+
+@media (max-width: 47.99rem) {
+  [data-screen="4"] .scrapbook {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .9rem .9rem;
+    --pw: max(6rem, calc((100svh - 30rem) / 2));
+  }
+  .scrapbook li.k2 { grid-column: 1 / -1; }
+  .pager__label { display: none; }
+  .pager__btn { padding-inline: .8rem; font-size: .9rem; }
+}
+
+/* Step 5 — the message ------------------------------------------------------ */
+
+.msg { align-items: center; justify-content: center; text-align: center; }
+
+/* 1) Fake loading screen */
+.loader { display: grid; justify-items: center; gap: .9rem; width: min(100%, 26rem); }
+.loader__icon { font-size: 4rem; line-height: 1; animation: hop .5s ease-in-out infinite alternate; }
+.loader__bar {
+  width: 100%;
+  height: 30px;
+  padding: 3px;
+  border: var(--border);
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.loader__bar span {
+  display: block;
+  width: 0%;
+  height: 100%;
+  border-radius: 999px;
+  background: repeating-linear-gradient(-45deg, var(--pink) 0 12px, #FF8DBB 12px 24px);
+  background-size: 34px 34px;
+  animation: stripes .6s linear infinite;
+  transition: width .45s var(--ease), background-color .2s;
+}
+@keyframes stripes { to { background-position: 34px 0; } }
+.loader__pct { font-family: var(--display); font-size: 2.2rem; line-height: 1; }
+.loader__status { min-height: 2.6em; font-family: var(--pixel); font-size: 1.35rem; line-height: 1.2; }
+.loader.is-error .loader__bar { animation: shake .3s ease 2; border-color: var(--red); }
+.loader.is-error .loader__bar span { background: repeating-linear-gradient(-45deg, var(--red) 0 12px, #FF8A8D 12px 24px); }
+.loader.is-error .loader__status { color: var(--red); }
+.loader.is-leaving { animation: fade-out .35s ease forwards; }
+
+/* 2) The mailroom + envelope that plays hard to get */
+.mailroom { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; width: 100%; flex: 1; min-height: 0; }
+.mailroom__toast {
+  min-height: 2.4em;
+  font-family: var(--display);
+  font-size: clamp(1.3rem, 1rem + 1.4vw, 1.9rem);
+  line-height: 1.15;
+}
+.mailroom__toast.is-pop { animation: toast-pop .45s var(--ease); }
+.mailroom__hint { font-family: var(--pixel); font-size: 1.3rem; color: var(--ink-2); animation: blink 1.2s steps(2) infinite; }
+@keyframes blink { 50% { opacity: .35; } }
+.mailroom__floor { animation: bob 2.2s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-10px); } }
+
+.env {
+  position: relative;
+  display: block;
+  width: min(72vw, 21rem);
+  aspect-ratio: 3 / 2;
+  padding: 0;
+  border: 0;
+  background: none;
+  transform: translate(var(--x, 0), var(--y, 0)) rotate(var(--r, 0deg)) scale(var(--s, 1));
+  transition: transform .45s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.env:focus-visible { outline-offset: 8px; }
+.env__back, .env__front, .env__flap { position: absolute; left: 0; right: 0; }
+.env__back { inset: 0; border: var(--border); border-radius: 12px; background: #FF9FC5; box-shadow: var(--shadow); }
+.env__letter {
+  position: absolute;
+  left: 9%; right: 9%; top: 8%; bottom: 10%;
+  display: grid;
+  align-content: center;
+  gap: 12%;
+  padding: 0 12%;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background: #FFFEF9;
+  z-index: 1;
+  transition: transform .9s var(--ease) .45s, z-index 0s .45s;
+}
+.env.is-open .env__letter { z-index: 5; }
+.env__letter i { display: block; height: 3px; border-radius: 3px; background: rgb(90 169 255 / .5); }
+.env__letter i:last-child { width: 55%; }
+.env__front {
+  inset: 0;
+  z-index: 2;
+  border-radius: 12px;
+  background: #FFC7DC;
+  clip-path: polygon(0 32%, 50% 68%, 100% 32%, 100% 100%, 0 100%);
+  box-shadow: inset 0 0 0 2.5px var(--ink);
+}
+.env__front::after {
+  /* the V fold lines */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top right, transparent calc(50% - 1.5px), var(--ink) 50%, transparent calc(50% + 1.5px)) left bottom / 50% 68% no-repeat,
+    linear-gradient(to top left, transparent calc(50% - 1.5px), var(--ink) 50%, transparent calc(50% + 1.5px)) right bottom / 50% 68% no-repeat;
+  opacity: .35;
+}
+.env__flap {
+  top: 0;
+  z-index: 3;
+  height: 62%;
+  background: var(--pink);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top;
+  transition: transform .6s ease-in-out, z-index 0s .3s;
+  filter: drop-shadow(0 2px 0 var(--ink));
+}
+.env__seal {
+  position: absolute;
+  top: calc(62% - 26px);
+  left: 50%;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-left: -26px;
+  border: var(--border);
+  border-radius: 50%;
+  background: var(--red);
+  font-size: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform .4s var(--ease), opacity .3s;
+}
+.env__scan {
+  position: absolute;
+  left: -6%; right: -6%;
+  top: 0;
+  z-index: 5;
+  height: 5px;
+  border-radius: 5px;
+  background: var(--green);
+  box-shadow: 0 0 14px 4px rgb(54 207 138 / .6);
+  opacity: 0;
+}
+.env.is-scanning .env__scan { opacity: 1; animation: scan .55s ease-in-out infinite alternate; }
+@keyframes scan { to { top: 100%; } }
+.env.is-spin { animation: env-spin .8s var(--ease); }
+@keyframes env-spin { 50% { transform: translate(var(--x, 0), var(--y, 0)) rotate(200deg) scale(.7); } }
+.env.is-shake { animation: env-shake .12s linear 8; }
+@keyframes env-shake {
+  25% { transform: translate(calc(var(--x, 0px) - 6px), var(--y, 0)) rotate(-4deg); }
+  75% { transform: translate(calc(var(--x, 0px) + 6px), var(--y, 0)) rotate(4deg); }
+}
+
+/* opening */
+.env.is-open { --x: 0px; --y: 0px; --r: 0deg; --s: 1.05; }
+.env.is-open .env__flap { transform: rotateX(180deg); z-index: 0; }
+.env.is-open .env__seal { transform: scale(0) rotate(90deg); opacity: 0; }
+.env.is-open .env__letter { transform: translateY(-62%); }
+
+.heart-pop {
+  position: fixed;
+  z-index: 85;
+  pointer-events: none;
+  font-size: var(--s, 1.6rem);
+  animation: heart-pop 1.4s cubic-bezier(.2, .8, .3, 1) forwards;
+}
+@keyframes heart-pop {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(.3); }
+  15%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1) rotate(var(--r)); }
+}
+
+/* 3) The letter */
+.letter-view { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; width: 100%; flex: 1; min-height: 0; }
+.letter-view .letterpaper {
+  flex: 0 1 auto;
+  min-height: 0;
+  width: min(100%, 36rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: letter-rise .9s var(--ease) both;
+  scrollbar-width: thin;
+  scrollbar-color: var(--pink) transparent;
+}
+@keyframes letter-rise {
+  from { opacity: 0; transform: translateY(80px) rotate(-3deg) scale(.85); }
+}
+.letterpaper__to { margin-bottom: .5rem; font-family: var(--display); font-size: 1.2rem; color: var(--pink); -webkit-text-stroke: .5px var(--ink); }
+.letter-view .actions { margin-top: 0; }
+.letter-view .actions:not([hidden]) { animation: word-in .6s var(--ease) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .env, .env__flap, .env__letter, .mailroom__floor { transition: none; animation: none; }
+  .heart-pop { display: none; }
+}
+
+/* Step 6 - the final question ------------------------------------------------ */
+
+.quiz { display: grid; justify-items: center; gap: .75rem; }
+.quiz__lock { font-size: 3.5rem; line-height: 1; animation: hop .6s ease-in-out infinite alternate; }
+.quiz__lock.is-open { animation: unlock .8s var(--ease); }
+.quiz__form { display: flex; flex-wrap: wrap; justify-content: center; gap: .75rem; width: min(100%, 30rem); margin-top: .75rem; }
+.quiz__input {
+  flex: 1 1 14rem;
+  min-height: 3.1rem;
+  padding: .6rem 1rem;
+  border: var(--border);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  font-family: var(--display);
+  font-size: 1.3rem;
+  text-align: center;
+}
+.quiz__input:focus-visible { outline: none; background: var(--yellow-soft); }
+.quiz__input.is-wrong { border-color: var(--red); animation: shake .35s ease; }
+.quiz__input.is-right { border-color: var(--green); background: var(--green-soft); }
+.quiz__tries { min-height: 1.2em; font-family: var(--pixel); font-size: 1.15rem; color: var(--ink-2); }
+.quiz__hint {
+  padding: .75rem 1.1rem;
+  border: 2.5px dashed var(--pink);
+  border-radius: 12px;
+  background: var(--pink-soft);
+  font-family: var(--display);
+  font-size: 1.1rem;
+  line-height: 1.3;
+  transform: rotate(-1.5deg);
+  animation: word-in .6s var(--ease) both;
+}
+.quiz__hint.is-new { animation: word-in .6s var(--ease) both; }
+.quiz__win {
+  width: 100%;
+  font-family: var(--display);
+  font-size: clamp(1.8rem, 1.2rem + 3vw, 2.8rem);
+  line-height: 1.1;
+  color: var(--pink);
+  -webkit-text-stroke: 1.5px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 3px 3px 0 var(--ink);
+  animation: word-in .7s var(--ease) both;
+}
+[data-quiz-done]:not([hidden]) { display: grid; justify-items: center; gap: 1rem; }

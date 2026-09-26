@@ -22,11 +22,12 @@ function go(n) {
   to.classList.add('is-active', 'is-entering');
   to.addEventListener('animationend', () => to.classList.remove('is-entering'), { once: true });
 
+  const step = Math.min(n, 4);   // screens 4 & 5 both live under the "Gift" pill
   $$('[data-progress]').forEach((li) => {
     const i = +li.dataset.progress;
-    li.classList.toggle('is-current', i === n);
-    li.classList.toggle('is-done', i < n);
-    if (i === n && li.classList.contains('is-locked')) {
+    li.classList.toggle('is-current', i === step);
+    li.classList.toggle('is-done', i < step);
+    if (i === step && li.classList.contains('is-locked')) {
       li.classList.replace('is-locked', 'is-unlocked');
       const lock = li.querySelector('[data-lock]');
       if (lock) lock.textContent = '🎁';
@@ -38,6 +39,7 @@ function go(n) {
   heading.tabIndex = -1;
   heading.focus({ preventScroll: true });
   current = n;
+  to.dispatchEvent(new Event('screen:enter'));
 }
 
 function say(el, text) {
@@ -387,20 +389,314 @@ function initGift() {
     startX = null;
   });
 
-  // The envelope: tap to open his message.
-  const openBtn = $('[data-envelope-open]');
-  const paper = $('#his-message');
+  initPager();
+}
+
+/* Scrapbook pages — 3 photos at a time, no scrolling --------------------- */
+
+function initPager() {
+  const book = $('[data-scrapbook]');
+  const items = $$('li', book);
+  const pages = +book.dataset.pages || 1;
+  const prev = $('[data-page-prev]');
+  const next = $('[data-page-next]');
+  const label = $('[data-page-label]');
+  let page = 0;
+  let busy = false;
+
+  function render(p, dir) {
+    book.dataset.dir = dir;
+    items.forEach((li) => {
+      const on = +li.dataset.page === p;
+      li.hidden = !on;
+      li.classList.toggle('is-entering', on);
+    });
+    $$('[data-dot]').forEach((d) => d.classList.toggle('is-on', +d.dataset.dot === p));
+    if (label) label.textContent = `Page ${p + 1} of ${pages} · tap a photo to zoom`;
+    prev.disabled = p === 0;
+    const last = p === pages - 1;
+    next.textContent = last ? 'Read my message 💌' : 'Next ›';
+    next.classList.toggle('is-final', last);
+    next.setAttribute('aria-label', last ? 'Read his message' : 'Next photos');
+    page = p;
+  }
+
+  function turn(to, dir) {
+    if (busy || to < 0 || to >= pages || to === page) return;
+    busy = true;
+    book.dataset.dir = dir;
+    const leaving = items.filter((li) => +li.dataset.page === page);
+    leaving.forEach((li) => { li.classList.remove('is-entering'); li.classList.add('is-leaving'); });
+    setTimeout(() => {
+      leaving.forEach((li) => li.classList.remove('is-leaving'));
+      render(to, dir);
+      busy = false;
+    }, reduced ? 0 : 260);
+  }
+
+  prev.addEventListener('click', () => turn(page - 1, 'prev'));
+  next.addEventListener('click', () => {
+    if (page === pages - 1) go(5);
+    else turn(page + 1, 'next');
+  });
+  document.addEventListener('keydown', (e) => {
+    if (current !== 4 || $('[data-lightbox]').open) return;
+    if (e.key === 'ArrowRight') next.click();
+    if (e.key === 'ArrowLeft') prev.click();
+  });
+
+  // Swipe between pages on phones.
+  let sx = null;
+  book.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; }, { passive: true });
+  book.addEventListener('touchend', (e) => {
+    if (sx === null) return;
+    const dx = e.changedTouches[0].clientX - sx;
+    if (Math.abs(dx) > 50) (dx < 0 ? () => turn(page + 1, 'next') : () => turn(page - 1, 'prev'))();
+    sx = null;
+  });
+
+  // First page drops in when the gift screen opens.
+  $('[data-screen="4"]').addEventListener('screen:enter', () => render(0, 'next'));
+}
+
+/* Screen 5 — the very dramatic message unboxing -------------------------- */
+
+const LOADING = [
+  [8,   '📁', 'Opening a very important file…'],
+  [23,  '🗜️', 'Compressing 4 years of feelings…'],
+  [41,  '🧹', 'Removing snoring evidence…'],
+  [58,  '💘', 'Adding extra kilig…'],
+  [74,  '💥', 'ERROR: too much love detected. Retrying…', 'error'],
+  [52,  '🔁', 'Retrying (with less love)… just kidding, same amount.'],
+  [86,  '🔤', 'Spell-checking “Pannal ko ba…”'],
+  [97,  '🙏', 'Almost there… please don’t be angry again'],
+  [100, '💌', 'Done!'],
+];
+
+function heartBurst(x, y, count = 16) {
+  if (reduced) return;
+  for (let i = 0; i < count; i++) {
+    const h = document.createElement('span');
+    h.className = 'heart-pop';
+    h.textContent = HEARTS[i % HEARTS.length];
+    const a = (Math.PI * 2 * i) / count;
+    const dist = 90 + Math.random() * 120;
+    h.style.left = `${x}px`;
+    h.style.top = `${y}px`;
+    h.style.setProperty('--dx', `${Math.cos(a) * dist}px`);
+    h.style.setProperty('--dy', `${Math.sin(a) * dist - 40}px`);
+    h.style.setProperty('--r', `${(Math.random() - .5) * 120}deg`);
+    h.style.setProperty('--s', `${1.2 + Math.random() * 1.2}rem`);
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 1500);
+  }
+}
+
+function initMessage() {
+  const screen = $('[data-screen="5"]');
+  const loader = $('[data-loader]');
+  const fill = $('[data-loader-fill]');
+  const bar = $('[data-loader-bar]');
+  const pct = $('[data-loader-pct]');
+  const icon = $('[data-loader-icon]');
+  const status = $('[data-loader-status]');
+  const room = $('[data-mailroom]');
+  const env = $('[data-env]');
+  const toast = $('[data-env-toast]');
+  const hint = $('[data-env-hint]');
+  const letter = $('[data-letter]');
   const finishWrap = $('[data-finish-wrap]');
-  openBtn.addEventListener('click', () => {
-    openBtn.setAttribute('aria-expanded', 'true');
-    openBtn.hidden = true;
-    paper.hidden = false;
-    paper.classList.add('is-opening');
-    paper.tabIndex = -1;
-    paper.focus({ preventScroll: true });
-    paper.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
-    confetti(60);
-    setTimeout(() => { finishWrap.hidden = false; }, reduced ? 0 : 1200);
+  let started = false;
+  let taps = 0;
+  let opening = false;
+
+  const say = (text) => {
+    toast.textContent = text;
+    toast.classList.remove('is-pop');
+    void toast.offsetWidth;
+    toast.classList.add('is-pop');
+  };
+
+  // 1) the fake loading bar
+  function runLoader() {
+    const stepMs = reduced ? 150 : 750;
+    LOADING.forEach(([p, ico, text, mood], i) => {
+      setTimeout(() => {
+        fill.style.width = `${p}%`;
+        pct.textContent = `${p}%`;
+        bar.setAttribute('aria-valuenow', p);
+        icon.textContent = ico;
+        status.textContent = text;
+        loader.classList.toggle('is-error', mood === 'error');
+        if (i === LOADING.length - 1) setTimeout(showMailroom, reduced ? 100 : 700);
+      }, i * stepMs);
+    });
+  }
+
+  // 2) the envelope arrives
+  function showMailroom() {
+    loader.classList.add('is-leaving');
+    setTimeout(() => {
+      loader.hidden = true;
+      room.hidden = false;
+      say('You’ve got mail 💌');
+      env.focus({ preventScroll: true });
+    }, reduced ? 0 : 350);
+  }
+
+  // …and plays hard to get
+  // Jump sideways, shrinking a bit, but always stay inside the window.
+  function dodge() {
+    const body = env.closest('.window__body').getBoundingClientRect();
+    const scale = 0.75;
+    const room = Math.max(0, (body.width - env.offsetWidth * scale) / 2 - 12);
+    const x = (Math.random() > .5 ? 1 : -1) * (room * (0.6 + Math.random() * 0.4));
+    const y = 20 + Math.random() * 30;
+    env.style.setProperty('--x', `${x.toFixed(0)}px`);
+    env.style.setProperty('--y', `${y.toFixed(0)}px`);
+    env.style.setProperty('--r', `${((Math.random() - .5) * 30).toFixed(0)}deg`);
+    env.style.setProperty('--s', String(scale));
+  }
+
+  env.addEventListener('click', () => {
+    if (opening) return;
+    taps++;
+
+    if (taps === 1) {
+      dodge();
+      say('Hmm… too easy. Catch me first 😏');
+      hint.textContent = 'Tap it again';
+      react('happy', null, 'Hehe, pakipot muna 😜');
+      return;
+    }
+
+    if (taps === 2) {
+      env.style.setProperty('--x', '0px');
+      env.style.setProperty('--y', '0px');
+      env.style.setProperty('--r', '0deg');
+      env.style.setProperty('--s', '1');
+      env.classList.remove('is-spin');
+      void env.offsetWidth;
+      env.classList.add('is-spin');
+      say('Wait — are you sure? It’s VERY cheesy 🧀');
+      hint.textContent = 'Tap if you’re ready for the cheese';
+      return;
+    }
+
+    // 3rd tap: identity check, then open
+    opening = true;
+    env.classList.remove('is-spin');
+    env.classList.add('is-scanning', 'is-shake');
+    say('Scanning fingerprint… 🔍');
+    hint.textContent = 'Please hold still (or don’t)';
+    setTimeout(() => {
+      env.classList.remove('is-scanning', 'is-shake');
+      say('Access granted: Wife detected ✅');
+      hint.textContent = '';
+    }, reduced ? 200 : 1600);
+    setTimeout(openEnvelope, reduced ? 400 : 2500);
+  });
+
+  // 3) open it up
+  function openEnvelope() {
+    env.classList.add('is-open');
+    say('Opening… 💞');
+    const r = env.getBoundingClientRect();
+    setTimeout(() => {
+      heartBurst(r.left + r.width / 2, r.top + r.height / 3, 20);
+      confetti(90);
+    }, reduced ? 0 : 500);
+
+    setTimeout(() => {
+      room.hidden = true;
+      letter.hidden = false;
+      $('#his-message').focus({ preventScroll: true });
+      setTimeout(() => { finishWrap.hidden = false; }, reduced ? 0 : 1500);
+    }, reduced ? 300 : 1900);
+  }
+
+  screen.addEventListener('screen:enter', () => {
+    if (started) return;
+    started = true;
+    runLoader();
+  });
+
+  // One more hurdle before the gift: the final question.
+  $('[data-to-quiz]').addEventListener('click', () => go(6));
+}
+
+/* Screen 6 — the final question ------------------------------------------ */
+
+function initQuiz() {
+  const form = $('[data-quiz]');
+  const input = $('[data-quiz-input]');
+  const toast = $('[data-quiz-toast]');
+  const tries = $('[data-quiz-tries]');
+  const hint = $('[data-quiz-hint]');
+  const done = $('[data-quiz-done]');
+  const lock = $('[data-quiz-lock]');
+  const hints = JSON.parse($('#quiz-hints')?.textContent || '[]');
+  const clean = (s) => s.toLowerCase().replace(/[^a-z]/g, '');
+  let answer = '';
+  try { answer = clean(atob(input.dataset.answer || '')); } catch { /* fine */ }
+
+  const nopes = [
+    'Nope 🙅‍♀️',
+    'Wrong! Think harder, Doc 🩺',
+    'Hmm… are you sure you’re married to me? 🤨',
+    'Not even close 😂',
+    'Try again, love 😏',
+    'The system is judging you 👀',
+    'Incorrect. Your husband is disappointed 😭',
+  ];
+  let wrong = 0;
+  let solved = false;
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (solved) return;
+    const guess = clean(input.value);
+    if (!guess) { say(toast, 'Type something first 😅'); input.focus(); return; }
+
+    if (guess === answer) {
+      solved = true;
+      input.classList.remove('is-wrong');
+      input.classList.add('is-right');
+      input.readOnly = true;
+      lock.textContent = '🔓';
+      lock.classList.add('is-open');
+      say(toast, 'Correct! ✅');
+      tries.textContent = wrong ? `Solved after ${wrong} wrong ${wrong === 1 ? 'try' : 'tries'} 😏` : 'First try?! 😳';
+      hint.hidden = true;
+      done.hidden = false;
+      confetti(150);
+      react('happy', null, 'Hehe 🙈 same, love');
+      setTimeout(() => $('[data-finish]').focus({ preventScroll: true }), 300);
+      return;
+    }
+
+    wrong++;
+    input.classList.remove('is-wrong');
+    void input.offsetWidth;
+    input.classList.add('is-wrong');
+    say(toast, nopes[(wrong - 1) % nopes.length]);
+    tries.textContent = `Wrong answers: ${wrong}`;
+    if (wrong % 3 === 0) react('cry', 'default', wrong >= 6 ? 'You really forgot?! 😭' : 'Seriously?! 😭');
+
+    // A hint after every 3 wrong answers, each more obvious than the last.
+    const level = Math.floor(wrong / 3);
+    if (level > 0 && hints.length) {
+      hint.textContent = hints[Math.min(level, hints.length) - 1];
+      hint.hidden = false;
+      hint.classList.remove('is-new');
+      void hint.offsetWidth;
+      hint.classList.add('is-new');
+    }
+    input.select();
+  });
+
+  $('[data-screen="6"]').addEventListener('screen:enter', () => {
+    setTimeout(() => input.focus({ preventScroll: true }), 400);
   });
 
   // On to the love letter, then her site.
@@ -415,3 +711,5 @@ initQuestion();
 initWishlist();
 initNda();
 initGift();
+initMessage();
+initQuiz();
