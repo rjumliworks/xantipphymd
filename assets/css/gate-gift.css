@@ -451,3 +451,5 @@
 @media (prefers-reduced-motion: reduce) {
   .scare__face, .scare__text, .scare.is-heartbeat, .scare.is-boo { animation: none !important; }
 }
+.scare__face--mask { border-radius: 0; overflow: visible; width: min(62vmin, 30rem); aspect-ratio: 200 / 250; filter: drop-shadow(0 0 50px rgb(255 0 30 / .55)); }
+.scare__face--mask svg { width: 100%; height: 100%; }

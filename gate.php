@@ -430,8 +430,30 @@ $exhibit = function (int $clause) use ($g) {
   </div>
 
   <div class="scare__boo" data-boo hidden>
-    <div class="scare__face" aria-hidden="true">
-      <?php if ($scareImg): ?><img src="<?= $scareImg ?>" alt=""><?php else: ?><span>👹</span><?php endif; ?>
+    <div class="scare__face<?= $scareImg ? '' : ' scare__face--mask' ?>" aria-hidden="true">
+      <?php if ($scareImg): ?>
+        <img src="<?= $scareImg ?>" alt="">
+      <?php else: ?>
+        <!-- stand-in until assets/img/scare.jpg exists: a pale mask, hollow eyes, gaping mouth -->
+        <svg viewBox="0 0 200 250" focusable="false">
+          <defs>
+            <radialGradient id="mask-skin" cx="50%" cy="38%" r="65%">
+              <stop offset="0" stop-color="#F2EEE6"/><stop offset=".7" stop-color="#B9B2A8"/><stop offset="1" stop-color="#5E5852"/>
+            </radialGradient>
+            <filter id="mask-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter>
+          </defs>
+          <path d="M100 6C162 6 192 62 188 126c-4 72-44 116-88 118C56 242 16 198 12 126 8 62 38 6 100 6Z" fill="url(#mask-skin)"/>
+          <ellipse cx="66" cy="104" rx="23" ry="33" transform="rotate(-14 66 104)" fill="#050303"/>
+          <ellipse cx="134" cy="104" rx="23" ry="33" transform="rotate(14 134 104)" fill="#050303"/>
+          <circle cx="69" cy="110" r="9" fill="#FF1020" filter="url(#mask-glow)"/>
+          <circle cx="131" cy="110" r="9" fill="#FF1020" filter="url(#mask-glow)"/>
+          <circle cx="69" cy="110" r="4" fill="#FFB0B0"/>
+          <circle cx="131" cy="110" r="4" fill="#FFB0B0"/>
+          <path d="M58 166c20-10 64-10 84 0-6 46-22 70-42 72-20-2-36-26-42-72Z" fill="#050303"/>
+          <path d="M62 168l6 13 6-12 6 14 6-14 7 15 7-15 6 14 6-14 6 12 6-13c-18-7-52-7-68 0Z" fill="#EDE7DC"/>
+          <path d="M84 236l4 12 4-12M110 234l3 9 3-9" stroke="#050303" stroke-width="3" fill="none"/>
+        </svg>
+      <?php endif; ?>
     </div>
     <p class="scare__text"><?= e($g['scare_text'] ?? 'BOO!') ?></p>
   </div>
