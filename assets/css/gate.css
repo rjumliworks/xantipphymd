@@ -1095,3 +1095,7 @@ button { cursor: pointer; }
 @keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 .polaroid__img img { object-position: 50% 62%; }
 .big__nick { display: block; margin-top: .6rem; font-family: var(--pixel); font-size: clamp(1.3rem, 1rem + 1vw, 1.7rem); line-height: 1; letter-spacing: .02em; color: var(--ink-2); }
+.check.is-locked { opacity: .55; cursor: not-allowed; }
+.check.is-locked input { pointer-events: none; }
+.clauses-box.is-nudge { animation: shake .35s ease 2; }
+.clauses-hint.is-pop { animation: toast-pop .45s var(--ease); color: var(--red); }

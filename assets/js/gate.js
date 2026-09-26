@@ -283,16 +283,67 @@ function initNda() {
   ];
   let r = 0;
 
-  // The clause list scrolls on its own; the hint cheers once she reaches the end.
+  // She must actually read it: the "I have read" box stays locked until she reaches
+  // the end of the clauses — and speed-scrolling gets bounced back to the top once.
   const box = $('[data-clauses]');
   const hint = $('[data-clauses-hint]');
+  const MIN_READ_MS = 15000;
+  let openedAt = 0;
+  let readAll = false;
+  let bounced = 0;
+
+  read.disabled = true;
+  read.closest('.check').classList.add('is-locked');
+
+  const unlockRead = () => {
+    readAll = true;
+    read.disabled = false;
+    read.closest('.check').classList.remove('is-locked');
+    hint.textContent = '✓ You actually read it all. Impressive.';
+    hint.classList.add('is-done');
+    sfx.ding();
+  };
+
+  const atBottom = () => box.scrollTop + box.clientHeight >= box.scrollHeight - 8;
+
+  const tooFast = [
+    'That was too fast 🤨 Back to the top — read it properly!',
+    'Again?! Speed-reading is not allowed, Doc 😤',
+    'The clauses are watching you 👀 Slowly this time.',
+  ];
+  let returning = false;
+
   box.addEventListener('scroll', () => {
-    if (hint.classList.contains('is-done')) return;
-    if (box.scrollTop + box.clientHeight >= box.scrollHeight - 8) {
-      hint.textContent = '✓ You actually read it all. Impressive.';
-      hint.classList.add('is-done');
+    if (returning) { if (box.scrollTop < 20) returning = false; return; }
+    if (readAll || !atBottom()) return;
+    if (Date.now() - openedAt < MIN_READ_MS) {
+      returning = true;
+      hint.textContent = tooFast[Math.min(bounced, tooFast.length - 1)];
+      bounced++;
+      hint.classList.remove('is-pop'); void hint.offsetWidth; hint.classList.add('is-pop');
+      sfx.buzz();
+      react('cry', 'default', 'Skipping my clauses?! 😭');
+      box.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+      return;
     }
+    unlockRead();
   }, { passive: true });
+
+  // Tapping the locked checkbox early gets a telling-off.
+  read.closest('.check').addEventListener('click', (e) => {
+    if (readAll) return;
+    e.preventDefault();
+    say(toast, 'Nice try 😏 Scroll down and read all 11 clauses first.');
+    sfx.buzz();
+    box.classList.remove('is-nudge'); void box.offsetWidth; box.classList.add('is-nudge');
+  });
+
+  $('[data-screen="3"]').addEventListener('screen:enter', () => {
+    openedAt = Date.now();
+    box.scrollTop = 0;
+    // If a huge screen shows every clause without scrolling, she has read it by looking.
+    requestAnimationFrame(() => { if (box.scrollHeight <= box.clientHeight + 8) setTimeout(unlockRead, MIN_READ_MS / 2); });
+  });
 
   // Only the Wife can sign: her name, big or small X, with or without "Dr.".
   const sigHint = $('[data-sig-hint]');
